@@ -1,0 +1,95 @@
+extends layout
+
+block content
+	script(type="text/javascript" src="https://www.gstatic.com/charts/loader.js")
+	script(type='text/javascript').var members =!{JSON.stringify(members)}
+	script(src='/javascripts/notes.js')
+	div.container(ng-app='appNotes' ng-controller='notesCtrl')
+		h2.block Welcome To D-Life, #{loginUser} 
+			a.btn.btn-warning(href='/logout') Logout
+		h3.header(ng-click='showAddNote=true;showNoteCalendar=false;showLifeD=false') 写一条儿 (Add A Note) 
+		form.form-horizontal(method="post", id="addNoteForm", action='/addNote' ng-show='showAddNote')
+			label About Who (谁)
+			| <br>	
+			select.form-control(ng-model='about' id='about')
+				option(ng-repeat='x in members' ng-value='x.email') {{x.firstname+' '+x.lastname}}
+			| <br><br>	
+			label KeyWord (主题)
+			| <br>
+			input.form-control(id="keyword", ng-model="keyword" required ng-keyup="searchKeyword(keyword,'keyword')")
+			div(ng-show='keywords.length')
+				ui
+					li.list-item(ng-repeat='x in keywords' ng-click="fetchKeyword(x,'keyword')") {{x}}
+			| <br><br>
+			label Details (什么)
+			| <br>
+			textarea.form-control(id="detail", ng-model="detail" onkeyup="while(this.scrollTop>0){this.rows++;}")
+			| <br><br>
+			label Value (量度)
+			| <br>
+			input.form-control(id="value", ng-model="value")
+			| <br><br>
+			input.form-control(multiple accept="image/" id='fileUpload' type="file" ng-show="false"  onchange='angular.element(this).scope().onSelectFiles(this)') 
+			input.form-control.btnAddImages(type='button' ng-click='btnFileOnClick()' value='Add Image') 
+			div.div-preview(ng-repeat='image in images')
+				image.img-thumbnail(ng-src='{{image}}')
+				a.boxclose(ng-click='deleteImage(image)')
+			| <br><br>
+			input.btn(type="button", value="Save" ng-click='addNote()')
+		h3.header(ng-click='showAddNote=false;showNoteCalendar=true;showLifeD=false') 看一看 (Notes Calendar)
+		div(ng-show='showNoteCalendar')
+			div(style="display:inline-block; min-height:290px;")
+				uib-datepicker(ng-model="selectedDate" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)")
+			div(ng-repeat='note in notes')
+				p {{note.about}}, {{note.keyword}}, {{note.details}}, Written By {{note.creator}}, at {{note.time}}
+				div.div-preview(ng-repeat='pic in note.pics')
+					a(href='{{pic}}' target='_blank')
+						image.img-thumbnail(ng-src='{{pic}}')
+				| <br><br>			
+
+
+		h3.header(ng-click='showAddNote=false;showNoteCalendar=false;showLifeD=true') 查一查 (Data Of Life)	
+		div(ng-show='showLifeD')
+			label From
+			div
+				p.input-group
+					input(type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="from" is-open="popup1.open" min-date="minDate" max-date="maxDate" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" close-text="Close" alt-input-formats="altInputFormats")
+					span.input-group-btn
+						button.btn.btn-default(ng-click="open1()")
+							i.glyphicon.glyphicon-calendar
+
+			label To
+			div
+				p.input-group
+					input(type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="to" is-open="popup2.open" min-date="minDate" max-date="maxDate" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" close-text="Close" alt-input-formats="altInputFormats")
+					span.input-group-btn
+						button.btn.btn-default(ng-click="open2()")
+							i.glyphicon.glyphicon-calendar
+			label About Who (谁)
+			| <br>	
+			select.form-control(ng-model='about_search' id='about_search')
+				option(ng-repeat='x in members' ng-value='x.email') {{x.firstname+' '+x.lastname}}
+			| <br><br>	
+			label KeyWord (主题)
+			| <br>
+			input.form-control(id="keyword", ng-model="keyword_search" required ng-keyup="searchKeyword(keyword_search, 'keyword_search')")
+			div(ng-show='keywords_search.length')
+				ui
+					li.list-item(ng-repeat='x in keywords_search' ng-click="fetchKeyword(x, 'keyword_search')") {{x}}
+			| <br><br>
+			label Include (包含)
+			| <br>
+			input.form-control(id="detail", ng-model="detail_search")
+			| <br><br>
+			input.btn(type="button", value="Search" ng-click='searchNotes()')
+			| <br><br>			
+			div(ng-show='results.length') From {{from | date:"MM/dd/yyyy"}} To {{to | date:"MM/dd/yyyy"}}, in {{(to-from)/(1000*60*60*24)}} days
+			div.bar-chart(id='chart_div')
+			| <br><br>
+			div(ng-repeat='result in resultsShow')
+				p {{result.about}}, {{result.keyword}}, {{result.details}}, Written By {{result.creator}}, On {{result.createdOn}}
+
+
+
+		
+

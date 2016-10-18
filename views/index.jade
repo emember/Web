@@ -1,0 +1,14 @@
+extends layout
+
+block content	
+	div.containe.text-center
+		div.wrapper
+			img.img-responsive(src='images/#{pic}')  	
+			div.login-form
+				form(method="post", id="loginForm", action='/auth')
+						label.form-control.login-form-label Username
+						input.form-control(id="username", type="text", name="username", placeholder="Enter your username")
+						label.form-control.login-form-label Password
+						input.form-control(id="password", type="password", name="password")
+						| <br>
+						input.btn.login-form-btn(id='btnLogin' type="submit", value="Log In")

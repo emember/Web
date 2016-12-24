@@ -7,11 +7,9 @@ var bodyParser = require('body-parser');
 var request = require("request");
 var crypto = require('crypto');
 
-
-
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var ajax =require('./routes/ajax')
+var neo4j = require('node-neo4j');
+var db = new neo4j('http://54.187.14.85:443','Authorization:Basic bmVvNGo6ZW1lbWJlcjIwMTYwOCE=');
+global.db=db;
 
 var app = express();
 
@@ -28,9 +26,26 @@ app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+function requestCommon (req, res, next) {
+  var para =req.body;
+  para.company_id=req.headers.companyid;
+
+  req.para=para;
+
+  // keep executing the router middleware
+  next();
+}
+
+
+var routes = require('./routes/index');
+var company =require('./routes/company')
+var member =require('./routes/member')
+
+app.use(requestCommon);
+
 app.use('/', routes);
-app.use('/users', users);
-app.use('/ajax', ajax);
+app.use('/company', company);
+app.use('/member', member);
 
 
 // catch 404 and forward to error handler

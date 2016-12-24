@@ -1,29 +1,24 @@
-function decodeBase64Image(dataString) {
-  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  var response = {};
-
-  response.data = new Buffer(matches?matches[2]:dataString, 'base64');
-
-  return response.data;
-}
-
-var imagePath='./public/images/';
-var crypto = require('crypto');
+var path = require('path');
 var fs = require('fs');
+var imageBase=path.join(__dirname, '../public/images/');
 
+function mkdirp(filepath) {
+    var dirname = path.dirname(filepath);
+
+    if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname);
+    }
+}
 
 module.exports = 
 {
-  saveImage : function(images) {
-    var res=[];
+  save: function(file,image) {
+  	mkdirp(imageBase+file);
 
-    for(var i=images.length-1;i>=0;i--){
-      var filename=crypto.randomBytes(16).toString('hex');
-      var data=decodeBase64Image(images[i]);
+  	var base64Data = image.replace(/^data:image\/png;base64,/, "");
 
-      fs.writeFileSync(imagePath+filename+".jpg", data);
-      res.push("images/"+filename+".jpg");
-    }
-    return res;             
+	fs.writeFile(imageBase+file, base64Data, { flag: 'w', encoding :'base64' }, function(err) {
+    	console.log(err);
+    });
   }  
 }

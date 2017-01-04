@@ -40,12 +40,14 @@ function requestCommon (req, res, next) {
 var routes = require('./routes/index');
 var company =require('./routes/company')
 var member =require('./routes/member')
+var visit =require('./routes/visit')
 
 app.use(requestCommon);
 
 app.use('/', routes);
 app.use('/company', company);
 app.use('/member', member);
+app.use('/visit', visit);
 
 
 // catch 404 and forward to error handler

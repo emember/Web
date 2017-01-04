@@ -3,9 +3,9 @@ var router = express.Router();
 var image=require('../util/image.js');
 
 router.post('/info', function(req, res, next) {
-	var query='MATCH (m:member {qr_code:{qr_code}})  RETURN m \
-	 \
-	';
+	var query='MATCH (m:member {qr_code:{qr_code}})  \
+	match (m)-[r:has_visit]->(v:visit) \
+	return {qr_code:m.qr_code, firstname:m.firstname, lastname:m.lastname, discount:m.discount, phone:m.phone, visit_count:count(v)}';
 
 	db.cypherQuery(
 	query,
@@ -22,15 +22,14 @@ router.post('/info', function(req, res, next) {
 router.post('/create',function(req, res, next) {
 	var para =req.para;
 
-	var qr_pic_file=para.company_id+'\\'+para.qr_code+"_qr.png";
+	var qr_pic_file=para.company_id+'/'+para.qr_code+"_qr.png";
 	image.save(qr_pic_file, para.qr_pic);
 	para.qr_pic=qr_pic_file;
 	
 
-	var profile_pic_file=para.company_id+'\\'+ para.qr_code+"_profile.png";	
+	var profile_pic_file=para.company_id+'/'+ para.qr_code+"_profile.png";	
 	image.save(profile_pic_file, para.profile_pic);
 	para.profile_pic=profile_pic_file;
-	
 
 	var query="match (c:company {company_id:{company_id}}) \
 				merge (e:email {email: {email}}) \
@@ -49,5 +48,28 @@ router.post('/create',function(req, res, next) {
 			res.json(result.data);
 	});		
 })
+
+router.post('/update',function(req, res, next) {
+	var para =req.para;	
+
+	var profile_pic_file=para.company_id+'\\'+ para.qr_code+"_profile.png";	
+	image.save(profile_pic_file, para.profile_pic);
+	para.profile_pic=profile_pic_file;
+	
+
+	var query="merge (m:member {qr_code:{qr_code}})\
+				set m.firstname={firstname}, m.lastname={lastname}, m.phone={phone}, m.date_of_birth={date_of_birth}, m.discount={discount}";
+
+	db.cypherQuery(
+		query,
+		para,
+		function (err, result) {
+			if (err) {
+				return console.log(err);
+			}	  
+			res.json(result.data);
+	});		
+})
+
 
 module.exports = router;
